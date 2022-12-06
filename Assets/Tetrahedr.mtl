@@ -1,0 +1,8 @@
+newmtl Default-Material
+Kd 1 1 1
+d 1
+
+newmtl WireFrameMat
+Kd 1 1 1
+d 1
+
