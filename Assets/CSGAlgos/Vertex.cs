@@ -55,6 +55,6 @@ public class Vertex
     }
     public override string ToString()
     {
-        return LocalPosition.ToString();
+        return LocalPosition.ToString("F4");
     }
 }

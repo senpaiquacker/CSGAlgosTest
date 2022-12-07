@@ -77,7 +77,7 @@ public class OperationsAlgorithms
     private static Polygon.PolyStatus CalculateBoundaryPolygon(Polygon polyA, PrimitiveMesh B)
     {
         var bc = polyA.ToGlobal(polyA.Barycenter);
-        var r = new Ray(bc, polyA.PlaneEquation.normal);
+        var r = new Ray(bc, polyA.PolyPlane.normal);
         bool cast = false;
         (Polygon target, float distance) firstHit = (null, float.PositiveInfinity);
         //while no succesful cast has been made
@@ -86,7 +86,7 @@ public class OperationsAlgorithms
             foreach(var polyB in B.Polygons)
             {
                 //find dot product
-                var dot = Vector3.Dot(r.direction, polyB.PlaneEquation.normal);
+                var dot = Vector3.Dot(r.direction, polyB.PolyPlane.normal);
                 //find the signed distance
                 var dist = polyB.GetSignedDistance(bc, true);
                 //cast unsuccessful - ray lies on plane
@@ -141,7 +141,7 @@ public class OperationsAlgorithms
         }
         if (firstHit.target == null)
             return Polygon.PolyStatus.Outside;
-        var clos_dot = Vector3.Dot(r.direction, firstHit.target.PlaneEquation.normal);
+        var clos_dot = Vector3.Dot(r.direction, firstHit.target.PolyPlane.normal);
         if (firstHit.distance == 0)
         {
             if (clos_dot > 0)

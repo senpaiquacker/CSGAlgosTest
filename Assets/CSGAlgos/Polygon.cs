@@ -7,7 +7,7 @@ public class Polygon
 {
     public PrimitiveMesh Parent { get; private set; }
     public Ring<Vertex> Vertices;
-    public (Vector3 normal, float D) PlaneEquation { get; private set; }
+    public Plane PolyPlane { get; private set; }
     public (Vector3 min, Vector3 max) PolyExtent 
     { 
         get =>
@@ -47,8 +47,8 @@ public class Polygon
             var edge = (Vertices[i].LocalPosition, Vertices[(i + 1) % Vertices.Length].LocalPosition);
             var eDir = (edge.Item2 - edge.Item1);
             var pDir = (point - edge.Item1);
-            PolySide side = Vector3.Dot(Vector3.Cross(eDir, pDir), PlaneEquation.normal) < 0 ? PolySide.Left :
-                Vector3.Dot(Vector3.Cross(eDir, pDir), PlaneEquation.normal) > 0 ? PolySide.Right : PolySide.None;
+            PolySide side = Vector3.Dot(Vector3.Cross(eDir, pDir), PolyPlane.normal) < 0 ? PolySide.Left :
+                Vector3.Dot(Vector3.Cross(eDir, pDir), PolyPlane.normal) > 0 ? PolySide.Right : PolySide.None;
             if (side == 0)
             {
                 if ((Vector3.Dot(eDir, pDir) > 0 && pDir.magnitude / eDir.magnitude <= 1 || point == edge.Item1) && includeEdges)
@@ -78,12 +78,7 @@ public class Polygon
         /*var A = (p2.y - p1.y) * (p3.z - p1.z) - (p3.y - p1.y) * (p2.z - p1.z);
         var B = (p3.x - p1.x) * (p2.z - p1.z) - (p2.x - p1.x) * (p3.z - p1.z);
         var C = (p2.x - p1.x) * (p3.y - p1.y) - (p3.x - p1.x) * (p2.y - p1.y);*/
-        var normal = Vector3.Cross(p1 - p2, p2 - p3);
-        var D = -(Vector3.Dot(normal, p1));
-        var dbg = normal.normalized;
-        D /= normal.magnitude;
-        normal /= normal.magnitude;
-        PlaneEquation = (normal, D);
+        PolyPlane = new Plane(p1, p2, p3);
         #endregion
         Vertices = additional.Concat(new Vertex[] { f, s, t }).ToRing();
         #region Handle All Vertices
@@ -102,13 +97,12 @@ public class Polygon
         }
         #endregion
     }
-
     public float GetSignedDistance(Vector3 point, bool isGlobal)
     {
-        var plane = isGlobal ? Parent.ToGlobal(PlaneEquation) : PlaneEquation;
-        return (Vector3.Dot(plane.normal, point) + plane.D) / plane.normal.magnitude;
+        var plane = isGlobal ? ToGlobal() : PolyPlane;
+        return plane.GetDistanceToPoint(point);
     }
-
+    public Plane ToGlobal() => Parent.ToGlobal(PolyPlane, ToGlobal(Vertices[0]));
     public Vector3 ToGlobal(Vertex vert) => Parent.ToGlobal(vert);
     public Vector3 ToGlobal(Vector3 pos) => Parent.ToGlobal(pos);
     public Vector3 ToLocal(Vector3 global) => Parent.ToLocal(global);
@@ -124,6 +118,6 @@ public class Polygon
 
     public override string ToString()
     {
-        return PlaneEquation.ToString();
+        return $"({PolyPlane.normal.ToString("F4")},{PolyPlane.distance}";
     }
 }

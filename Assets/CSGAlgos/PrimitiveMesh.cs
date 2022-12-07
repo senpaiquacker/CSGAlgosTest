@@ -138,8 +138,9 @@ public class PrimitiveMesh : MonoBehaviour
     public (Vector3 normal, float D) ToGlobal((Vector3 normal, float D) planeEquation)
     {
         var plane = new Vector4(planeEquation.normal.x, planeEquation.normal.y, planeEquation.normal.z, planeEquation.D);
-        var newPlane = transform.localToWorldMatrix * plane;
-        return (newPlane, newPlane.w);
+        var newPlane = transform.localToWorldMatrix.inverse.transpose * plane;
+        var mag = ((Vector3)newPlane).magnitude;
+        return (newPlane / mag, newPlane.w / mag);
     }
     public Vector3 ToGlobal(Vector3 point) => transform.localToWorldMatrix.MultiplyPoint3x4(point);
     public Vector3 ToGlobal(Vertex vertex) => transform.localToWorldMatrix.MultiplyPoint3x4(vertex.LocalPosition);
@@ -148,6 +149,14 @@ public class PrimitiveMesh : MonoBehaviour
         emin: transform.localToWorldMatrix.MultiplyPoint3x4(polygon.PolyExtent.min),
         emax: transform.localToWorldMatrix.MultiplyPoint3x4(polygon.PolyExtent.max)
     );
+
+    public Plane ToGlobal(Plane p) => transform.localToWorldMatrix.TransformPlane(p);
+    public Plane ToGlobal(Plane p, Vector3 pointOnPlane)
+    {
+        var plane = transform.localToWorldMatrix.TransformPlane(p);
+        plane.distance = -Vector3.Dot(pointOnPlane, plane.normal);
+        return plane;
+    }
     public Vector3 ToLocal(Vector3 anyPoint) => transform.worldToLocalMatrix.MultiplyPoint3x4(anyPoint);
     #endregion
 }

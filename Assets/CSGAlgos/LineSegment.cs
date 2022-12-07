@@ -27,32 +27,32 @@ public class IntersectionSegment
     {
         AIntersection = new IntersectionSegment();
         BIntersection = new IntersectionSegment();
-        var a = polyA.Parent.ToGlobal(polyA.PlaneEquation);
-        var b = polyB.Parent.ToGlobal(polyB.PlaneEquation);
+        var a = polyA.ToGlobal();
+        var b = polyB.ToGlobal();
         var d = Vector3.Cross(a.normal, b.normal).normalized;
         if(d == Vector3.zero) return;
         //assume z = 0
         var p = new Vector3(
 
-            (a.D * b.normal.y - b.D * a.normal.y),
-            (b.D * a.normal.x - a.D * b.normal.x),
+            (a.distance * b.normal.y - b.distance * a.normal.y),
+            (b.distance * a.normal.x - a.distance * b.normal.x),
             0) 
 
             / (b.normal.x * a.normal.y - a.normal.x * b.normal.y);
 
         p = (!float.IsNaN(p.x) && !float.IsNaN(p.y) && !float.IsNaN(p.z)) ? p :  new Vector3(
 
-            (a.D * b.normal.z - b.D * a.normal.z),
+            (a.distance * b.normal.z - b.distance * a.normal.z),
             0,
-            (b.D * a.normal.x - a.D * b.normal.x)) 
+            (b.distance * a.normal.x - a.distance * b.normal.x)) 
 
             / (b.normal.x * a.normal.z - a.normal.x * b.normal.z);
 
         p = (!float.IsNaN(p.x) && !float.IsNaN(p.y) && !float.IsNaN(p.z)) ? p : new Vector3(
 
             0,
-            (a.D * b.normal.z - b.D * a.normal.z),
-            (b.D * a.normal.y - a.D * b.normal.y))
+            (a.distance * b.normal.z - b.distance * a.normal.z),
+            (b.distance * a.normal.y - a.distance * b.normal.y))
 
             / (b.normal.y * a.normal.z - a.normal.y - b.normal.z);
 
@@ -233,7 +233,7 @@ public class IntersectionSegment
     }
     public override string ToString()
     {
-        return $"{{LineEq: ({LineEquation.p} startingPoint; {LineEquation.d} directionVec) - Points({FirstK}, {SecondK})}}";
+        return $"{{LineEq: (p:{LineEquation.p.ToString("F4")}; d:{LineEquation.d.ToString("F4")}) - Points({FirstK}, {SecondK})}}";
     }
 }
 
