@@ -278,11 +278,13 @@ public class OperationsAlgorithms
         if (seg.SegmentProperties.s == IntersectionSegment.PointType.Edge)
         {
             poly.Parent.CreateVertex(seg.LineEquation.p + seg.FirstK * seg.LineEquation.d, true, out newV, out var ActId);
+            poly.Parent.AddDullVertices(newV);
             poly.Vertices[seg.PrecedingVertices.last].Status = Vertex.VertexStatus.Boundary;
         }
         else
         {
             poly.Parent.CreateVertex(seg.LineEquation.p + seg.SecondK * seg.LineEquation.d, true, out newV, out var ActId);
+            poly.Parent.AddDullVertices(newV);
             poly.Vertices[seg.PrecedingVertices.first].Status = Vertex.VertexStatus.Boundary;
         }
         //No matter, in start is point on edge, or at the end -
@@ -303,7 +305,7 @@ public class OperationsAlgorithms
         vertexToConnect.neighbours.Remove(poly.Vertices[seg.PrecedingVertices.last]);
         vertexToConnect.neighbours.Add(newV);
         //Add newcreated Polygon
-        poly.Parent.AddPolygon(newPoly, newV);
+        poly.Parent.AddPolygon(newPoly);
         poly.Vertices[seg.PrecedingVertices.last] = newV;
         newV.Status = Vertex.VertexStatus.Boundary;
         
@@ -339,7 +341,7 @@ public class OperationsAlgorithms
         }
         Vertex newV;
         poly.Parent.CreateVertex(seg.LineEquation.p + countedK * seg.LineEquation.d, true, out newV, out var actId);
-
+        poly.Parent.AddDullVertices(newV);
         var newVerts = poly.Vertices.ToList();
         newVerts.Insert(countedPreceeding, newV);
         poly.Vertices = newVerts.ToRing();
@@ -348,7 +350,7 @@ public class OperationsAlgorithms
         DivideBySegmentVertices(poly, seg, out newPvertices, out oldPvertices);
         var newP = new Polygon(poly.Parent, newPvertices[0], newPvertices[1], newPvertices[2], newPvertices.Skip(3).ToArray());
         poly.Vertices = oldPvertices.ToRing();
-        poly.Parent.AddPolygon(newP, newV);
+        poly.Parent.AddPolygon(newP);
         poly.Vertices[seg.PrecedingVertices.first].Status =
         poly.Vertices[seg.PrecedingVertices.last].Status = Vertex.VertexStatus.Boundary;
         
@@ -373,6 +375,7 @@ public class OperationsAlgorithms
         var cosine = Mathf.Abs(Vector3.Dot(seg.LineEquation.d, poly.Parent.ToGlobal(poly.Vertices[countedPreceeding])));
         Vertex newV;
         poly.Parent.CreateVertex(seg.LineEquation.p + countedK * seg.LineEquation.d, false, out newV, out var actId);
+        poly.Parent.AddDullVertices(newV);
         Polygon[] newPs;
         if(cosine > 0.98f)
         {
@@ -450,7 +453,7 @@ public class OperationsAlgorithms
             }
         }
 
-        poly.Parent.AddPolygon(newPs[0], newV);
+        poly.Parent.AddPolygon(newPs[0]);
         for(int i = 1; i < newPs.Length; i++)
             poly.Parent.AddPolygon(newPs[i]);
         newV.Status = Vertex.VertexStatus.Boundary;
@@ -466,6 +469,7 @@ public class OperationsAlgorithms
             //They are the same point
             Vertex newV;
             poly.Parent.CreateVertex(seg.LineEquation.p + seg.FirstK * seg.LineEquation.d, true, out newV, out var actId);
+            poly.Parent.AddDullVertices(newV);
             var newP = new Polygon(poly.Parent, newV, poly.Vertices[(seg.PrecedingVertices.last - 1 + poly.Vertices.Length) % poly.Vertices.Length],
                 poly.Vertices[seg.PrecedingVertices.last]);
             poly.Vertices = new[] { newV }
@@ -473,7 +477,7 @@ public class OperationsAlgorithms
                 .Concat(poly.Vertices.Take(seg.PrecedingVertices.last))
                 .ToRing();
 
-            poly.Parent.AddPolygon(newP, newV);
+            poly.Parent.AddPolygon(newP);
             newV.Status = Vertex.VertexStatus.Boundary;
         }
         else
@@ -481,7 +485,9 @@ public class OperationsAlgorithms
             //They Are DifferentPoints
             var newVs = new Vertex[2];
             poly.Parent.CreateVertex(seg.LineEquation.p + seg.FirstK * seg.LineEquation.d, true, out newVs[0], out var ActId);
+            poly.Parent.AddDullVertices(newVs[0]);
             poly.Parent.CreateVertex(seg.LineEquation.p + seg.SecondK * seg.LineEquation.d, true, out newVs[1], out var actId);
+            poly.Parent.AddDullVertices(newVs[1]);
             var newPs = new Polygon[2];
             newPs[0] = new Polygon(poly.Parent,
                 newVs[1],
@@ -491,7 +497,7 @@ public class OperationsAlgorithms
                 newVs[0],
                 poly.Vertices[(seg.PrecedingVertices.last - 1 + poly.Vertices.Length) % poly.Vertices.Length],
                 newVs[1]);
-            poly.Parent.AddPolygon(newPs[1], newVs);
+            poly.Parent.AddPolygon(newPs[1]);
             poly.Parent.AddPolygon(newPs[0]);
             foreach (var v in newVs)
                 v.Status = Vertex.VertexStatus.Boundary;
@@ -501,7 +507,9 @@ public class OperationsAlgorithms
     {
         var newVs = new Vertex[2];
         poly.Parent.CreateVertex(seg.LineEquation.p + seg.FirstK * seg.LineEquation.d, true, out newVs[0], out var actId);
+        poly.Parent.AddDullVertices(newVs[0]);
         poly.Parent.CreateVertex(seg.LineEquation.p + seg.SecondK * seg.LineEquation.d, true, out newVs[1], out var ActId);
+        poly.Parent.AddDullVertices(newVs[1]);
         var newVerts = poly.Vertices.ToList();
         newVerts.Insert(seg.PrecedingVertices.first, newVs[0]);
         seg.PrecedingVertices.first++;
@@ -513,7 +521,7 @@ public class OperationsAlgorithms
         var newP = new Polygon(poly.Parent, newPVertices[0], newPVertices[1], newPVertices[2], newPVertices.Skip(3).ToArray());
         poly.Vertices = oldPVertices.ToRing();
 
-        poly.Parent.AddPolygon(newP, newVs);
+        poly.Parent.AddPolygon(newP);
         foreach(var v in newVs)
             v.Status = Vertex.VertexStatus.Boundary; 
     }
@@ -521,7 +529,9 @@ public class OperationsAlgorithms
     {
         var newVs = new Vertex[2];
         poly.Parent.CreateVertex(seg.LineEquation.p + seg.FirstK * seg.LineEquation.d, true, out newVs[0], out var actId);
+        poly.Parent.AddDullVertices(newVs[0]);
         poly.Parent.CreateVertex(seg.LineEquation.p + seg.SecondK * seg.LineEquation.d, true, out newVs[1], out var ActId);
+        poly.Parent.AddDullVertices(newVs[1]);
         var verts = poly.Vertices.ToList();
         Polygon[] newPs = new Polygon[3];
         if (seg.SegmentProperties.s == IntersectionSegment.PointType.Edge)
@@ -547,7 +557,7 @@ public class OperationsAlgorithms
                 .Concat(poly.Vertices.Take(seg.PrecedingVertices.last - 1))
                 .Concat(new[] { newVs[1] })
                 .ToRing();
-            poly.Parent.AddPolygon(newPs[2], newVs);
+            poly.Parent.AddPolygon(newPs[2]);
             poly.Parent.AddPolygon(newPs[1]);
             poly.Parent.AddPolygon(newPs[0]);
         }
@@ -559,7 +569,7 @@ public class OperationsAlgorithms
             newPs[0] = new Polygon(poly.Parent, newVs[0], poly.Vertices[seg.PrecedingVertices.first - 1], poly.Vertices[seg.PrecedingVertices.first]);
             newPs[1] = new Polygon(poly.Parent, newVs[0], poly.Vertices[seg.PrecedingVertices.first], poly.Vertices[(seg.PrecedingVertices.first + 1) % poly.Vertices.Length]);
             newPs[2] = new Polygon(poly.Parent, poly.Vertices[seg.PrecedingVertices.first - 1], newVs[0], newVs[1],
-                poly.Vertices
+            poly.Vertices
                     .Take(seg.PrecedingVertices.first - 2)
                     .Skip(seg.PrecedingVertices.last)
                     .ToArray());
@@ -568,7 +578,7 @@ public class OperationsAlgorithms
                 .Concat(poly.Vertices.Skip(seg.PrecedingVertices.first + 1))
                 .Concat(poly.Vertices.Take(seg.PrecedingVertices.last - 1))
                 .ToRing();
-            poly.Parent.AddPolygon(newPs[2], newVs);
+            poly.Parent.AddPolygon(newPs[2]);
             poly.Parent.AddPolygon(newPs[1]);
             poly.Parent.AddPolygon(newPs[0]);
         }
@@ -583,9 +593,13 @@ public class OperationsAlgorithms
         bool isOnePoint = Mathf.Abs(seg.FirstK - seg.SecondK) < 0.00001f;
         Vertex[] newVs = isOnePoint ? new Vertex[1] : new Vertex[2];
         poly.Parent.CreateVertex(seg.LineEquation.p + seg.LineEquation.d * seg.FirstK, true, out newVs[0], out var actId);
+        poly.Parent.AddDullVertices(newVs[0]);
         if (!isOnePoint)
+        {
             poly.Parent.CreateVertex(seg.LineEquation.p + seg.LineEquation.d * seg.SecondK, true, out newVs[1], out var ActId);
-        Polygon[] newPs;
+            poly.Parent.AddDullVertices(newVs[1]);
+        }
+            Polygon[] newPs;
         switch ((isOnePoint, isCollinear))
         {
             #region Two Points, both continuations are on edges
@@ -803,7 +817,7 @@ public class OperationsAlgorithms
                 #endregion
         }
 
-        poly.Parent.AddPolygon(newPs[0], newVs);
+        poly.Parent.AddPolygon(newPs[0]);
         for(int i = 1; i < newPs.Length; i++)
             poly.Parent.AddPolygon(newPs[i]);
         for (int i = 0; i < newVs.Length; i++)

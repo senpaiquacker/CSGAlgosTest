@@ -56,8 +56,9 @@ public class PrimitiveMesh : MonoBehaviour
     public void UpdateMesh()
     {
         vertices = vertices.Distinct().ToArray();
-        mesh.vertices = vertices.Select(a => a.LocalPosition).ToArray();
-        mesh.triangles = polygons.SelectMany(a => a.Vertices.Select(a => a.IdInMesh)).ToArray();
+        mesh.vertices = polygons.SelectMany(a => a.Vertices.Select(a => a.LocalPosition)).ToArray();
+        var i = 0;
+        mesh.triangles = mesh.vertices.Select(a => i++).ToArray();
     }
     void Start()
     {
@@ -103,6 +104,10 @@ public class PrimitiveMesh : MonoBehaviour
         }
         vert = Vertex.CreateVertex(this, local);
         return true;
+    }
+    public void AddDullVertices(params Vertex[] newVerts)
+    {
+        vertices = vertices.Concat(newVerts).ToArray();
     }
     // Update is called once per frame
     void Update()

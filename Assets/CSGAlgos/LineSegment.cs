@@ -165,9 +165,19 @@ public class IntersectionSegment
         var ao = eLine.d * aok + eLine.p;
         return (ao - line.p).magnitude * Mathf.Sign(Vector3.Dot(ao - line.p, line.d));
     }
+    public static IntersectionSegment Copy(IntersectionSegment seg)
+    {
+        var k = new IntersectionSegment();
+        k.FirstK = seg.FirstK;
+        k.SecondK = seg.SecondK;
+        k.LineEquation = (seg.LineEquation.p, seg.LineEquation.d);
+        k.PrecedingVertices = (seg.PrecedingVertices.first, seg.PrecedingVertices.last);
+        k.SegmentProperties = (seg.SegmentProperties.s, seg.SegmentProperties.m, seg.SegmentProperties.l);
+        return k;
+    }
     public static bool CheckIntersection(IntersectionSegment segA, IntersectionSegment segB, out IntersectionSegment intersection)
     {
-        intersection = segA;
+        intersection = Copy(segA);
         var intersectionsType = (
             segB.CheckPointInsideSegment(segA.SecondK),
             segB.CheckPointInsideSegment(segA.FirstK),
