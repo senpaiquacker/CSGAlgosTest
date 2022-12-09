@@ -87,7 +87,7 @@ public class Polygon
         {
             #region Additional Vertices Check
             var dist = Mathf.Abs(GetSignedDistance(v.LocalPosition, false));
-            if (dist > 0.00001f)
+            if (dist > AlgoParams.MinDist)
                 throw new System.ArgumentException($"Polygon is not Planar. {v.LocalPosition} is out of plane");
             #endregion
             #region Assign Neighbours to Vertex

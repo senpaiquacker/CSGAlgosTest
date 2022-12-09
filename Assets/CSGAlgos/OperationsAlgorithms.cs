@@ -4,6 +4,7 @@ using UnityEngine;
 using System.Linq;
 public class OperationsAlgorithms
 {
+
     // Start is called before the first frame update
     public static void CalculateSubmeshes(PrimitiveMesh A, PrimitiveMesh B, 
         out (Polygon poly, Polygon.PolyStatus status)[] AMP,
@@ -90,16 +91,16 @@ public class OperationsAlgorithms
                 //find the signed distance
                 var dist = polyB.GetSignedDistance(bc, true);
                 //cast unsuccessful - ray lies on plane
-                if(dot == 0 && dist == 0)
+                if(dot == 0 && Mathf.Abs(dist) < AlgoParams.MinDist)
                 {
                     cast = false;
                     break;
                 }
                 //cast is parallel
-                else if(dot == 0 && dist > 0)
+                else if(dot == 0 && dist > AlgoParams.MinDist)
                     cast = true;
                 //point lies on plane, but ray is not
-                else if(dot != 0 && dist == 0)
+                else if(dot != 0 && Mathf.Abs(dist) < AlgoParams.MinDist)
                 {
                     if (polyB.ContainsPoint(polyB.ToLocal(bc), true))
                     {
@@ -112,7 +113,7 @@ public class OperationsAlgorithms
                         cast = true;
                 }
                 //ray is outside of plane
-                else if(dot != 0 && dist > 0)
+                else if(dot != 0 && dist > AlgoParams.MinDist)
                 {
                     var rDist = dist / dot;
                     var point = r.origin + r.direction * rDist;
@@ -142,7 +143,7 @@ public class OperationsAlgorithms
         if (firstHit.target == null)
             return Polygon.PolyStatus.Outside;
         var clos_dot = Vector3.Dot(r.direction, firstHit.target.PolyPlane.normal);
-        if (firstHit.distance == 0)
+        if (firstHit.distance < AlgoParams.MinDist)
         {
             if (clos_dot > 0)
                 return Polygon.PolyStatus.BoundaryPointsOut;
@@ -166,7 +167,7 @@ public class OperationsAlgorithms
         foreach(var a in polyA.Vertices)
         {
             var dist = polyB.GetSignedDistance(polyA.ToGlobal(a), true);
-            if (Mathf.Abs(dist) > 0.00001f)
+            if (Mathf.Abs(dist) > AlgoParams.MinDist)
             {
                 isCoplanar = false;
                 k += (int)Mathf.Sign(dist);
@@ -205,7 +206,7 @@ public class OperationsAlgorithms
         {
             if (v.vert.Status != Vertex.VertexStatus.Unknown)
                 continue;
-            if (v.dist > 0)
+            if (v.dist > AlgoParams.MinDist)
                 v.vert.MarkVerticeWithUnknown(Vertex.VertexStatus.Outside);
             else
                 v.vert.MarkVerticeWithUnknown(Vertex.VertexStatus.Inside);

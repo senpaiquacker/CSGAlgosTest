@@ -57,6 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\CSGAlgos\InstrumentHandler.cs" />
+    <Compile Include="Assets\CSGAlgos\Ring.cs" />
     <Compile Include="Assets\CSGAlgos\PrimitiveMesh.cs" />
     <Compile Include="Assets\CSGAlgos\OperationsAlgorithms.cs" />
     <Compile Include="Assets\CSGAlgos\Extent.cs" />
@@ -64,7 +65,8 @@
     <Compile Include="Assets\CSGAlgos\LineSegment.cs" />
     <Compile Include="Assets\CSGAlgos\Polygon.cs" />
     <Compile Include="Assets\CSGAlgos\SculptMesh.cs" />
-    <Compile Include="Assets\CSGAlgos\Ring.cs" />
+    <Compile Include="Assets\CSGAlgos\SubdivCasesDebug.cs" />
+    <Compile Include="Assets\CSGAlgos\AlgoParams.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\WireframeShader.shader" />

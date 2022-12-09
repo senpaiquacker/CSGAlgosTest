@@ -80,7 +80,7 @@ public class IntersectionSegment
         bool isSecond = false;
         for (int i = 0; i < polygon.Vertices.Length; i++)
         {
-            if(dists[i] == 0)
+            if(Mathf.Abs(dists[i]) < AlgoParams.MinDist)
             {
                 if (!isSecond)
                 {
@@ -106,7 +106,7 @@ public class IntersectionSegment
                     break;
                 }
             }
-            else if(Mathf.Sign(dists[i]) != Mathf.Sign(dists[(i + 1) % dists.Length]) && dists[(i + 1) % dists.Length] != 0)
+            else if(Mathf.Sign(dists[i]) != Mathf.Sign(dists[(i + 1) % dists.Length]) && Mathf.Abs(dists[(i + 1) % dists.Length]) > AlgoParams.MinDist)
             {
                 if(!isSecond)
                 {
@@ -135,13 +135,13 @@ public class IntersectionSegment
            segmentType.middle == PointType.None ||
            segmentType.last == PointType.None)
             throw new System.Exception("Invalid Polygon");
-        points.k1 = segmentType.first == PointType.Vertex ? Vector3.Dot(line.p + line.d, polygon.ToGlobal(polygon.Vertices[precedingVertices.first]) - line.p) :
+        points.k1 = segmentType.first == PointType.Vertex ? Vector3.Dot(line.d, polygon.ToGlobal(polygon.Vertices[precedingVertices.first]) - line.p) :
             GetLineEdgeIntersection(line,
                 (polygon.ToGlobal(polygon.Vertices[precedingVertices.first]), 
                 polygon.ToGlobal(polygon.Vertices[(precedingVertices.first + 1) % polygon.Vertices.Length])),
                 (dists[precedingVertices.first], dists[(precedingVertices.first + 1) % polygon.Vertices.Length]));
         points.k2 = segmentType.last == PointType.Vertex ?
-            Vector3.Dot(line.p + line.d, polygon.ToGlobal(polygon.Vertices[precedingVertices.last]) - line.p) :
+            Vector3.Dot(line.d, polygon.ToGlobal(polygon.Vertices[precedingVertices.last]) - line.p) :
             GetLineEdgeIntersection(line,
             (polygon.ToGlobal(polygon.Vertices[precedingVertices.last]),
             polygon.ToGlobal(polygon.Vertices[(precedingVertices.last + 1) % polygon.Vertices.Length])),
