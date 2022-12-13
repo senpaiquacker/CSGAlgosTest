@@ -40,10 +40,6 @@ public class PrimitiveMesh : MonoBehaviour
     [SerializeField]
     private GameObject debugSphere;
     private GameObject[] debugCopies;
-    public void UpdatePolys(Polygon[] polys)
-    {
-        polygons = polys;
-    }
     public void AddPolygon(Polygon newPoly, params Vertex[] newVerts)
     {
         if (newVerts != null)
@@ -60,13 +56,23 @@ public class PrimitiveMesh : MonoBehaviour
         var i = 0;
         mesh.triangles = mesh.vertices.Select(a => i++).ToArray();
     }
+    public void ExcludePolygons(Polygon[] polygons)
+    {
+        this.polygons = polygons;
+        foreach(var poly in this.polygons)
+        {
+            if(poly.Parent != this)
+            {
+                poly.ChangeParent(this);
+            }
+        }
+    }
     void Start()
     {
         mesh = GetComponent<MeshFilter>().mesh;
         vertices = new Vertex[0];
         polygons = new Polygon[mesh.triangles.Length / 3];
         Dictionary<int, int> duplicates = new Dictionary<int, int>();
-        int i = 0;
         for(int k = 0; k < mesh.triangles.Length; k+=3)
         {
             var trios = new Vertex[3];

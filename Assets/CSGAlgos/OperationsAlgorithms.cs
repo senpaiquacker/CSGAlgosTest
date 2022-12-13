@@ -28,10 +28,18 @@ public class OperationsAlgorithms
         CalculateSubmeshes(A, B, out AMP, out BMP);
         var Polys = AMP
             .Where(a => a.status == Polygon.PolyStatus.Outside || a.status == Polygon.PolyStatus.BoundaryPointsOut)
-            .Concat(BMP.Where(b => b.status == Polygon.PolyStatus.Inside))
+            .Concat(BMP.Where(b =>
+            {
+                if(b.status == Polygon.PolyStatus.Inside)
+                {
+                    b.poly.FlipPlane();
+                    return true;
+                }
+                return false;
+            }))
             .Select(a => a.poly)
             .ToArray();
-        A.UpdatePolys(Polys);
+        A.ExcludePolygons(Polys);
     }
     private static void Divide(PrimitiveMesh A, PrimitiveMesh B)
     {
@@ -172,7 +180,12 @@ public class OperationsAlgorithms
                 isCoplanar = false;
                 k += (int)Mathf.Sign(dist);
             }
+            
             ((List<float>)distances).Add(dist);
+            if (distances.Count() > 1 && ((List<float>)distances)[1] < 0)
+            {
+                var debug = true;
+            }
         }
         if(Mathf.Abs(k) == polyA.Vertices.Length)
             return 0;
@@ -190,8 +203,19 @@ public class OperationsAlgorithms
     }
     public static void SubdivideNonCoplanar(Polygon polyA, Polygon polyB, IEnumerable<float> allDistances)
     {
-        var ADistances = allDistances.Take(polyA.Vertices.Length);
-        var BDistances = allDistances.Skip(polyA.Vertices.Length);
+        var ADistances = new List<float>();
+        var BDistances = new List<float>();
+        {
+            int i = 0;
+            foreach (var d in allDistances)
+            {
+                if (i >= polyA.Vertices.Length)
+                    BDistances.Add(d);
+                else 
+                    ADistances.Add(d);
+                i++;
+            }
+        }
         IntersectionSegment ASeg, BSeg;
         IntersectionSegment.CheckIntersection(polyA, polyB, ADistances, BDistances,  out ASeg, out BSeg);
         IntersectionSegment AinB, BinA;
@@ -201,15 +225,21 @@ public class OperationsAlgorithms
             return;
         DeclareSubdivisionCase(polyA, AinB);
         DeclareSubdivisionCase(polyB, BinA);
-        var vDist = allDistances.Zip(polyA.Vertices.Concat(polyB.Vertices), (d, v) => (vert: v, dist: d));
-        foreach(var v in vDist)
         {
-            if (v.vert.Status != Vertex.VertexStatus.Unknown)
-                continue;
-            if (v.dist > AlgoParams.MinDist)
-                v.vert.MarkVerticeWithUnknown(Vertex.VertexStatus.Outside);
-            else
-                v.vert.MarkVerticeWithUnknown(Vertex.VertexStatus.Inside);
+            var i = 0;
+            foreach (var dist in allDistances)
+            {
+                var elem = i >= polyA.Vertices.Length ?
+                    polyB.Vertices[i - polyA.Vertices.Length] :
+                    polyA.Vertices[i];
+                if (elem.Status != Vertex.VertexStatus.Unknown)
+                    continue;
+                if (dist > AlgoParams.MinDist)
+                    elem.MarkVerticeWithUnknown(Vertex.VertexStatus.Outside);
+                else
+                    elem.MarkVerticeWithUnknown(Vertex.VertexStatus.Inside);
+                i++;
+            }
         }
     }
     private static void DeclareSubdivisionCase(Polygon polyA, IntersectionSegment AinB)
@@ -276,18 +306,24 @@ public class OperationsAlgorithms
     private static void CallCase_3(Polygon poly, IntersectionSegment seg)
     {
         Vertex newV;
-        if (seg.SegmentProperties.s == IntersectionSegment.PointType.Edge)
+        var calculatedPoint = seg.SegmentProperties.s == IntersectionSegment.PointType.Edge ?
+            seg.LineEquation.p + seg.FirstK * seg.LineEquation.d :
+            seg.LineEquation.p + seg.SecondK * seg.LineEquation.d;
+        var opposite = seg.SegmentProperties.s == IntersectionSegment.PointType.Edge ? seg.PrecedingVertices.last :
+            seg.PrecedingVertices.first;
+        poly.Vertices[opposite].Status = Vertex.VertexStatus.Boundary;
+        if ((calculatedPoint - poly.ToGlobal(poly.Vertices[seg.PrecedingVertices.first])).sqrMagnitude <= AlgoParams.MinDist * AlgoParams.MinDist)
         {
-            poly.Parent.CreateVertex(seg.LineEquation.p + seg.FirstK * seg.LineEquation.d, true, out newV, out var ActId);
-            poly.Parent.AddDullVertices(newV);
-            poly.Vertices[seg.PrecedingVertices.last].Status = Vertex.VertexStatus.Boundary;
-        }
-        else
-        {
-            poly.Parent.CreateVertex(seg.LineEquation.p + seg.SecondK * seg.LineEquation.d, true, out newV, out var ActId);
-            poly.Parent.AddDullVertices(newV);
             poly.Vertices[seg.PrecedingVertices.first].Status = Vertex.VertexStatus.Boundary;
+            return;
         }
+        if((calculatedPoint - poly.ToGlobal(poly.Vertices[seg.PrecedingVertices.last])).sqrMagnitude <= AlgoParams.MinDist * AlgoParams.MinDist)
+        {
+            poly.Vertices[seg.PrecedingVertices.last].Status = Vertex.VertexStatus.Boundary;
+            return;
+        }
+        poly.Parent.CreateVertex(calculatedPoint, true, out newV, out var ActId);
+        poly.Parent.AddDullVertices(newV);
         //No matter, in start is point on edge, or at the end -
         // you connect to last's previous
         // (counts as same as end point if edge in start, and as previous, if edge in end)

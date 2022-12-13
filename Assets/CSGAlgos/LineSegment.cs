@@ -135,7 +135,8 @@ public class IntersectionSegment
            segmentType.middle == PointType.None ||
            segmentType.last == PointType.None)
             throw new System.Exception("Invalid Polygon");
-        points.k1 = segmentType.first == PointType.Vertex ? Vector3.Dot(line.d, polygon.ToGlobal(polygon.Vertices[precedingVertices.first]) - line.p) :
+        points.k1 = segmentType.first == PointType.Vertex ? 
+            Vector3.Dot(line.d, polygon.ToGlobal(polygon.Vertices[precedingVertices.first]) - line.p) :
             GetLineEdgeIntersection(line,
                 (polygon.ToGlobal(polygon.Vertices[precedingVertices.first]), 
                 polygon.ToGlobal(polygon.Vertices[(precedingVertices.first + 1) % polygon.Vertices.Length])),
@@ -143,9 +144,9 @@ public class IntersectionSegment
         points.k2 = segmentType.last == PointType.Vertex ?
             Vector3.Dot(line.d, polygon.ToGlobal(polygon.Vertices[precedingVertices.last]) - line.p) :
             GetLineEdgeIntersection(line,
-            (polygon.ToGlobal(polygon.Vertices[precedingVertices.last]),
-            polygon.ToGlobal(polygon.Vertices[(precedingVertices.last + 1) % polygon.Vertices.Length])),
-            (dists[precedingVertices.last], dists[(precedingVertices.last + 1) % polygon.Vertices.Length]));
+                (polygon.ToGlobal(polygon.Vertices[precedingVertices.last]),
+                polygon.ToGlobal(polygon.Vertices[(precedingVertices.last + 1) % polygon.Vertices.Length])),
+                (dists[precedingVertices.last], dists[(precedingVertices.last + 1) % polygon.Vertices.Length]));
         if(points.k2 < points.k1)
         {
             var k3 = points.k1;
@@ -154,6 +155,9 @@ public class IntersectionSegment
             var i3 = precedingVertices.first;
             precedingVertices.first = precedingVertices.last;
             precedingVertices.last = i3;
+            var s3 = segmentType.first;
+            segmentType.first = segmentType.last;
+            segmentType.last = s3;
         }
         return points;
     }
@@ -222,7 +226,7 @@ public class IntersectionSegment
     }
     private bool CheckPointInsideSegment(float pointK)
     {
-        return pointK >= FirstK && pointK <= SecondK;
+        return pointK >= FirstK - AlgoParams.MinDist && pointK <= SecondK + AlgoParams.MinDist;
     }
     //Method swaps intersection order as in descending preceding vertices id order so that the 0-point of poly vertices is always above both of them logically
     private static IntersectionSegment SwapByVerticesOrder(IntersectionSegment intersection)

@@ -115,9 +115,35 @@ public class Polygon
         Inside = 10,
         Outside = 20,
     }
-
+    public void FlipPlane()
+    {
+        Vertices = Vertices.Reverse().ToRing();
+        PolyPlane = PolyPlane.flipped;
+    }
     public override string ToString()
     {
         return $"({PolyPlane.normal.ToString("F4")},{PolyPlane.distance}";
+    }
+    public void ChangeParent(PrimitiveMesh newParent)
+    {
+        for(int i = 0; i < Vertices.Length; i++)
+        {
+            var v = Vertices[i];
+            var k = newParent
+                .Vertices
+                .FirstOrDefault(a => 
+                    (a.LocalPosition - newParent.ToLocal(ToGlobal(v))).sqrMagnitude <= AlgoParams.MinDist * AlgoParams.MinDist);
+            if (k != default)
+            {
+                k.neighbours.Concat(Vertices.Except(new[] { v }));
+                Vertices[i] = k;
+            }
+            else
+            {
+                var newV = Vertex.CreateVertex(newParent, newParent.ToLocal(ToGlobal(v)));
+                newParent.AddDullVertices(newV);
+            }
+        }
+        Parent = newParent;
     }
 }
