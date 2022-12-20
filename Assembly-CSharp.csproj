@@ -56,17 +56,18 @@
     <Analyzer Include="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\Extensions\Microsoft\Visual Studio Tools for Unity\Analyzers\Microsoft.Unity.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\CSGAlgos\AlgoParams.cs" />
     <Compile Include="Assets\CSGAlgos\InstrumentHandler.cs" />
     <Compile Include="Assets\CSGAlgos\Ring.cs" />
     <Compile Include="Assets\CSGAlgos\PrimitiveMesh.cs" />
     <Compile Include="Assets\CSGAlgos\OperationsAlgorithms.cs" />
     <Compile Include="Assets\CSGAlgos\Extent.cs" />
+    <Compile Include="Assets\CSGAlgos\SubdivCasesDebug.cs" />
     <Compile Include="Assets\CSGAlgos\Vertex.cs" />
     <Compile Include="Assets\CSGAlgos\LineSegment.cs" />
     <Compile Include="Assets\CSGAlgos\Polygon.cs" />
     <Compile Include="Assets\CSGAlgos\SculptMesh.cs" />
-    <Compile Include="Assets\CSGAlgos\SubdivCasesDebug.cs" />
-    <Compile Include="Assets\CSGAlgos\AlgoParams.cs" />
+    <Compile Include="Assets\CSGAlgos\DebugAnimator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\WireframeShader.shader" />

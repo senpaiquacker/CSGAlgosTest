@@ -5,6 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(Collider), typeof(PrimitiveMesh))]
 public class InstrumentHandler : MonoBehaviour
 {
+    private bool keyPressed;
     private Collider sensor;
     private void Awake()
     {
@@ -22,14 +23,19 @@ public class InstrumentHandler : MonoBehaviour
         var x = Input.GetAxis("Horizontal");
         var y = Input.GetAxis("Vertical");
         transform.Translate(new Vector3(x, 0, y).normalized * Time.deltaTime);
+        keyPressed = Input.GetKeyDown(KeyCode.Space);
     }
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.GetComponent<SculptMesh>() != null)
+        GetComponent<MeshRenderer>().materials[1].color = Color.red;
+        if (true) //if(keyPressed)
         {
-            GetComponent<MeshRenderer>().materials[1].color = Color.red;
-            OperationsAlgorithms.Extract(other.GetComponent<PrimitiveMesh>(), GetComponent<PrimitiveMesh>());
+            if (other.gameObject.GetComponent<SculptMesh>() != null)
+            {
+                OperationsAlgorithms.Extract(other.GetComponent<PrimitiveMesh>(), GetComponent<PrimitiveMesh>());
+            }
         }
+        
     }
     private void OnTriggerStay(Collider other)
     {

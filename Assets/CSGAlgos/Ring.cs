@@ -14,12 +14,12 @@ public class Ring<T> : IEnumerable<T>
     {
         get
         {
-            PointerIndex = id;
+            //PointerIndex = id;
             return arr[id];
         }
         set
         {
-            PointerIndex = id;
+            //PointerIndex = id;
             arr[id] = value;
         }
     }
@@ -33,6 +33,10 @@ public class Ring<T> : IEnumerable<T>
             }
         }
         return -1;
+    }
+    public void SetPointer(int value)
+    {
+        PointerIndex = value;
     }
     public int LookAt(T value)
     {

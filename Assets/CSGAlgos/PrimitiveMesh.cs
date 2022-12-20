@@ -90,10 +90,6 @@ public class PrimitiveMesh : MonoBehaviour
         extentIds = Extent.UpdateExtent(vertices.Select(a => a.LocalPosition));
         foreach (var v in vertices)
             v.neighbours = v.neighbours.Distinct().ToList();
-
-        debugCopies = new GameObject[8];
-        for (int k = 0; k < 8; k++)
-            debugCopies[k] = Instantiate(debugSphere, Vector3.zero, Quaternion.identity);
     }
 
     public bool CreateVertex(Vector3 position, bool isGlobal, out Vertex vert, out int actId)
@@ -116,30 +112,6 @@ public class PrimitiveMesh : MonoBehaviour
         vertices = vertices.Concat(newVerts).ToArray();
     }
     // Update is called once per frame
-    void Update()
-    {
-        DrawDebug();
-    }
-    public void DrawDebug()
-    {
-        for (int k = 0; k < 8; k++)
-        {
-            var debugCoord = new Vector3();
-            if (k % 2 == 0)
-                debugCoord.z = ToGlobal(Vertices[extentIds.min.z].LocalPosition).z;
-            else
-                debugCoord.z = ToGlobal(Vertices[extentIds.max.z].LocalPosition).z;
-            if (k % 4 < 2)
-                debugCoord.y = ToGlobal(Vertices[extentIds.min.y].LocalPosition).y;
-            else
-                debugCoord.y = ToGlobal(Vertices[extentIds.max.y].LocalPosition).y;
-            if (k < 4)
-                debugCoord.x = ToGlobal(Vertices[extentIds.min.x].LocalPosition).x;
-            else
-                debugCoord.x = ToGlobal(Vertices[extentIds.max.x].LocalPosition).x;
-            debugCopies[k].transform.position = debugCoord;
-        }
-    }
     #region MatrixTransform
     public (Vector3 emin, Vector3 emax) ToGlobal() =>
     (

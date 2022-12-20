@@ -10,16 +10,17 @@ public class OperationsAlgorithms
         out (Polygon poly, Polygon.PolyStatus status)[] AMP,
         out (Polygon poly, Polygon.PolyStatus status)[] BMP)
     {
-        
-        Divide(A, B);
-        Divide(B, A);
-        Divide(A, B);
+
+        //Divide(A, B);
+        //Divide(B, A);
+        //Divide(A, B);
+        DebugAnimator.GlobalAnimator.StartCoroutine(DebugDivide(A, B));
         AMP = new (Polygon poly, Polygon.PolyStatus status)[A.Polygons.Length];
         BMP = new (Polygon poly, Polygon.PolyStatus status)[B.Polygons.Length];
-        for(int i = 0; i < A.Polygons.Length; i++)
+        /*for(int i = 0; i < A.Polygons.Length; i++)
             AMP[i] = (poly: A.Polygons[i], status: CheckPolyStatus(A.Polygons[i], B));
-        for(int i = 0; i < A.Polygons.Length; i++)
-            BMP[i] = (poly: B.Polygons[i], status: CheckPolyStatus(B.Polygons[i], A));
+        for(int i = 0; i < B.Polygons.Length; i++)
+            BMP[i] = (poly: B.Polygons[i], status: CheckPolyStatus(B.Polygons[i], A));*/
     }
     public static void Extract(PrimitiveMesh A, PrimitiveMesh B)
     {
@@ -41,6 +42,85 @@ public class OperationsAlgorithms
             .ToArray();
         A.ExcludePolygons(Polys);
     }
+    private static IEnumerator DebugDivide(PrimitiveMesh A, PrimitiveMesh B)
+    {
+        var Aex = A.ToGlobal();
+        var Bex = B.ToGlobal();
+        if(Extent.CheckIntersection(Aex, Bex))
+        {
+            foreach (var polyA in A.Polygons)
+            {
+                DebugAnimator.DrawPolygon(polyA);
+                yield return new WaitForSeconds(AlgoParams.DebugStepTime);
+                if(Extent.CheckIntersection(A.ToGlobal(polyA), Bex))
+                {
+                    foreach(var polyB in B.Polygons)
+                    {
+                        DebugAnimator.DrawPolygon(polyB);
+                        yield return new WaitForSeconds(AlgoParams.DebugStepTime);
+                        if(Extent.CheckIntersection(A.ToGlobal(polyA), B.ToGlobal(polyB)))
+                        {
+                            IEnumerable<float> distances;
+                            var inter = GetTwoPolygonsIntersection(polyA, polyB, out distances);
+                            if (inter == Intersection.CoplanarIntersection || inter == Intersection.NoIntersection)
+                                continue;
+                            else
+                                yield return DebugSubdivideNonCoplanar(polyA, polyB, distances);
+                        }
+                        DebugAnimator.DestroyPolygon(polyB);
+                    }
+                }
+                DebugAnimator.DestroyPolygon(polyA);
+            }
+        }
+    }
+    public static IEnumerator DebugSubdivideNonCoplanar(Polygon polyA, Polygon polyB, IEnumerable<float> allDistances)
+    {
+        var ADistances = new List<float>();
+        var BDistances = new List<float>();
+        {
+            int i = 0;
+            foreach (var d in allDistances)
+            {
+                if (i >= polyA.Vertices.Length)
+                    BDistances.Add(d);
+                else
+                    ADistances.Add(d);
+                i++;
+            }
+        }
+        IntersectionSegment ASeg, BSeg;
+        IntersectionSegment.CheckIntersection(polyA, polyB, ADistances, BDistances, out ASeg, out BSeg);
+        DebugAnimator.DrawLine(ASeg.LineEquation);
+        yield return new WaitForSeconds(AlgoParams.DebugStepTime);
+        IntersectionSegment AinB, BinA;
+        var hasInter = IntersectionSegment.CheckIntersection(ASeg, BSeg, out AinB);
+        hasInter = IntersectionSegment.CheckIntersection(BSeg, ASeg, out BinA) && hasInter;
+        if (hasInter)
+        {
+            DeclareSubdivisionCase(polyA, AinB);
+            //DeclareSubdivisionCase(polyB, BinA);
+            {
+                var i = 0;
+                foreach (var dist in allDistances)
+                {
+                    var elem = i >= polyA.Vertices.Length ?
+                        polyB.Vertices[i - polyA.Vertices.Length] :
+                        polyA.Vertices[i];
+                    if (elem.Status != Vertex.VertexStatus.Unknown)
+                        continue;
+                    if (dist > AlgoParams.MinDist)
+                        elem.MarkVerticeWithUnknown(Vertex.VertexStatus.Outside);
+                    else
+                        elem.MarkVerticeWithUnknown(Vertex.VertexStatus.Inside);
+                    i++;
+                }
+            }
+        }
+        DebugAnimator.DestroyLine(ASeg.LineEquation);
+        yield return new WaitForSeconds(AlgoParams.DebugStepTime);
+    }
+
     private static void Divide(PrimitiveMesh A, PrimitiveMesh B)
     {
         var Aex = A.ToGlobal();
@@ -182,10 +262,6 @@ public class OperationsAlgorithms
             }
             
             ((List<float>)distances).Add(dist);
-            if (distances.Count() > 1 && ((List<float>)distances)[1] < 0)
-            {
-                var debug = true;
-            }
         }
         if(Mathf.Abs(k) == polyA.Vertices.Length)
             return 0;
@@ -224,7 +300,7 @@ public class OperationsAlgorithms
         if (!hasInter)
             return;
         DeclareSubdivisionCase(polyA, AinB);
-        DeclareSubdivisionCase(polyB, BinA);
+        //DeclareSubdivisionCase(polyB, BinA);
         {
             var i = 0;
             foreach (var dist in allDistances)
