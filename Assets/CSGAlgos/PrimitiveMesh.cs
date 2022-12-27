@@ -42,17 +42,17 @@ public class PrimitiveMesh : MonoBehaviour
     private GameObject[] debugCopies;
     public void AddPolygon(Polygon newPoly, params Vertex[] newVerts)
     {
-        if (newVerts != null)
-        {
-            vertices = vertices.Concat(newVerts).ToArray();
-            mesh.vertices = vertices.Select(a => a.LocalPosition).ToArray();
-        }
-        mesh.triangles = mesh.triangles.Concat(newPoly.Vertices.Select(a => a.IdInMesh)).ToArray();
+        polygons = polygons.Concat(new[] { newPoly }).ToArray();
+        vertices = vertices.Concat(newVerts).ToArray();
     }
     public void UpdateMesh()
     {
         vertices = vertices.Distinct().ToArray();
-        mesh.vertices = polygons.SelectMany(a => a.Vertices.Select(a => a.LocalPosition)).ToArray();
+        var verts = new List<Vector3>();
+        foreach(var p in Polygons)
+            foreach(var v in p.Vertices)
+                verts.Add(v.LocalPosition);
+        mesh.vertices = verts.ToArray();
         var i = 0;
         mesh.triangles = mesh.vertices.Select(a => i++).ToArray();
     }
@@ -100,7 +100,7 @@ public class PrimitiveMesh : MonoBehaviour
         foreach(var i in vertices)
         {
             
-            if ((local - i.LocalPosition).sqrMagnitude < 0.00001f)
+            if ((local - i.LocalPosition).sqrMagnitude < AlgoParams.MinDist * AlgoParams.MinDist)
                 return false;
             actId++;
         }

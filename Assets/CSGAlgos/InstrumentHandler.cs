@@ -28,13 +28,13 @@ public class InstrumentHandler : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         GetComponent<MeshRenderer>().materials[1].color = Color.red;
-        if (true) //if(keyPressed)
+        /*if (true) //if(keyPressed)
         {
             if (other.gameObject.GetComponent<SculptMesh>() != null)
             {
                 OperationsAlgorithms.Extract(other.GetComponent<PrimitiveMesh>(), GetComponent<PrimitiveMesh>());
             }
-        }
+        }*/
         
     }
     private void OnTriggerStay(Collider other)

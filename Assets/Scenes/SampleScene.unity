@@ -329,8 +329,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 684a76de1569ec047ad01e0738554abb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mindist: 0.005
-  time: 1
+  mindist: 0.04
+  time: 0.7
 --- !u!114 &963194231
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -343,6 +343,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cc0e532a90b78d488871d905a7a52c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DebugObjects: []
 --- !u!43 &1039073314
 Mesh:
   m_ObjectHideFlags: 0

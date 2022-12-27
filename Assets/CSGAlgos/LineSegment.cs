@@ -14,6 +14,8 @@ public class IntersectionSegment
         Face = 3
     }
     public float FirstK;
+    public Vector3 FirstPoint => LineEquation.p + FirstK * LineEquation.d;
+    public Vector3 SecondPoint => LineEquation.p + SecondK * LineEquation.d;
     public float SecondK;
     public float MiddlePointK => (FirstK + SecondK) / 2;
     public (PointType s, PointType m, PointType l) SegmentProperties;
