@@ -55,6 +55,7 @@ public class PrimitiveMesh : MonoBehaviour
         mesh.vertices = verts.ToArray();
         var i = 0;
         mesh.triangles = mesh.vertices.Select(a => i++).ToArray();
+        mesh.RecalculateNormals();
     }
     public void ExcludePolygons(Polygon[] polygons)
     {
@@ -101,7 +102,10 @@ public class PrimitiveMesh : MonoBehaviour
         {
             
             if ((local - i.LocalPosition).sqrMagnitude < AlgoParams.MinDist * AlgoParams.MinDist)
+            {
+                vert = i;
                 return false;
+            } 
             actId++;
         }
         vert = Vertex.CreateVertex(this, local);

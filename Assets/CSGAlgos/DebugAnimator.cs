@@ -175,6 +175,12 @@ public class DebugAnimator : MonoBehaviour
         }
         yield return new WaitForSeconds(AlgoParams.DebugStepTime);
     }
+    public static IEnumerator DrawExtent(PrimitiveMesh mesh)
+    {
+        foreach (var p in Extent.GetAllPoints(mesh.ObjectExtent))
+            DebugDrawPoint(p);
+        yield return new WaitForSeconds(AlgoParams.DebugStepTime);
+    }
     #endregion
     #region DestroyMethods
     public static IEnumerator DestroyPolygon(Polygon poly, bool skipTime = false)
@@ -240,6 +246,24 @@ public class DebugAnimator : MonoBehaviour
         yield return DestroyPoint(seg.FirstPoint);
         yield return DestroyPoint(seg.SecondPoint);
     }
+    public static IEnumerator DestroyExtent(PrimitiveMesh mesh)
+    {
+        foreach(var p in Extent.GetAllPoints(mesh.ObjectExtent))
+        {
+            foreach(var obj in GlobalAnimator.DrawedObjects.Keys)
+            {
+                if ((p - (Vector3)obj).sqrMagnitude < AlgoParams.MinDist * AlgoParams.MinDist)
+                {
+                    var val = GlobalAnimator.DrawedObjects[obj];
+                    DestroyImmediate(val);
+                    GlobalAnimator.DrawedObjects.Remove(obj);
+                    GlobalAnimator.DebugObjects.Remove(val);
+                    break;
+                }
+            }
+        }
+        yield return new WaitForSeconds(AlgoParams.DebugStepTime);
+    }
     #endregion
     #endregion
     public static void Extract(PrimitiveMesh A, PrimitiveMesh B)
@@ -268,6 +292,8 @@ public class DebugAnimator : MonoBehaviour
     {
         var Aex = A.ToGlobal();
         var Bex = B.ToGlobal();
+        yield return DrawExtent(A);
+        yield return DrawExtent(B);
         if (Extent.CheckIntersection(Aex, Bex))
         {
             foreach (var polyA in A.Polygons)
@@ -574,9 +600,25 @@ public class DebugAnimator : MonoBehaviour
     /// <returns></returns>
     private static IEnumerator CallCase_6(Polygon poly, IntersectionSegment seg)
     {
+        if (Mathf.Abs(seg.FirstK - seg.SecondK) < AlgoParams.MinDist)
+        {
+            if(seg.SegmentProperties.s == IntersectionSegment.PointType.Vertex)
+            {
+                seg.PrecedingVertices.last = seg.PrecedingVertices.first;
+                seg.SegmentProperties.l = seg.SegmentProperties.m = seg.SegmentProperties.s;
+            }
+            else
+            {
+                seg.PrecedingVertices.first = seg.PrecedingVertices.last;
+                seg.SegmentProperties.s = seg.SegmentProperties.m = seg.SegmentProperties.l;
+            }
+            yield return CallCase_1(poly, seg);
+            yield break;
+        }
         int countedPreceeding;
         Vector3 countedPoint;
         bool isFirst;
+        
         if(seg.SegmentProperties.s == IntersectionSegment.PointType.Face)
         {
             countedPreceeding = seg.PrecedingVertices.first;
@@ -589,7 +631,11 @@ public class DebugAnimator : MonoBehaviour
             countedPoint = seg.SecondPoint;
             isFirst = false;
         }
-        var cosine = Mathf.Abs(Vector3.Dot(seg.LineEquation.d, poly.Parent.ToGlobal(poly.Vertices[countedPreceeding])));
+        var cosine = Mathf.Abs(Vector3.Dot(seg.LineEquation.d, 
+            poly.ToGlobal(countedPoint) - 
+            poly.ToGlobal(isFirst ? 
+                poly.Vertices[seg.PrecedingVertices.last] : 
+                poly.Vertices[seg.PrecedingVertices.first])));
         Vertex newV;
         poly.Parent.CreateVertex(countedPoint, true, out newV, out var actId);
         poly.Parent.AddDullVertices(newV);
@@ -708,10 +754,7 @@ public class DebugAnimator : MonoBehaviour
                 poly.Vertices[seg.PrecedingVertices.last]);
             yield return DrawPolygon(newP, new Color(255f, 50f, 50f));
             yield return DestroyPolygon(poly);
-            poly.Vertices = new[] { newV }
-                .Concat(poly.Vertices.Skip(seg.PrecedingVertices.last))
-                .Concat(poly.Vertices.Take(seg.PrecedingVertices.last))
-                .ToRing();
+            poly.Vertices[seg.PrecedingVertices.last] = newV;
             yield return DrawPolygon(poly, new Color(255f, 50f, 50f));
             poly.Parent.AddPolygon(newP);
             
@@ -786,12 +829,22 @@ public class DebugAnimator : MonoBehaviour
     /// <returns></returns>
     private static IEnumerator CallCase_9(Polygon poly, IntersectionSegment seg)
     {
-        var newVs = new Vertex[2];
-        if(Mathf.Abs(seg.FirstK - seg.SecondK) < AlgoParams.MinDist)
+        if (Mathf.Abs(seg.FirstK - seg.SecondK) < AlgoParams.MinDist)
         {
+            if(seg.SegmentProperties.s == IntersectionSegment.PointType.Edge)
+            {
+                seg.SegmentProperties.m = seg.SegmentProperties.l = IntersectionSegment.PointType.Edge;
+                seg.PrecedingVertices.last = seg.PrecedingVertices.first;
+            }
+            else
+            {
+                seg.SegmentProperties.m = seg.SegmentProperties.s = IntersectionSegment.PointType.Edge;
+                seg.PrecedingVertices.first = seg.PrecedingVertices.last;
+            }
             yield return CallCase_7(poly, seg);
             yield break;
         }
+        var newVs = new Vertex[2];
         poly.Parent.CreateVertex(seg.FirstPoint, true, out newVs[0], out var actId);
         poly.Parent.AddDullVertices(newVs[0]);
         poly.Parent.CreateVertex(seg.SecondPoint, true, out newVs[1], out var ActId);

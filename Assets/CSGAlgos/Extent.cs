@@ -9,17 +9,26 @@ public static class Extent
         point.x >= extent.min.x && point.y >= extent.min.y && point.z >= extent.min.z &&
         point.x <= extent.max.x && point.y <= extent.max.y && point.z <= extent.max.z;
     public static bool CheckIntersection((Vector3 min, Vector3 max) extentA, (Vector3 min, Vector3 max) extentB) => CheckIntersection(extentA, extentB, false);
-    private static bool CheckIntersection((Vector3 min, Vector3 max) extentA, (Vector3 min, Vector3 max) extentB, bool isSecond) =>
-        IsPointInExtent(extentA, new Vector3(extentB.min.x, extentB.min.y, extentB.min.z)) ||
-        IsPointInExtent(extentA, new Vector3(extentB.min.x, extentB.min.y, extentB.max.z)) ||
-        IsPointInExtent(extentA, new Vector3(extentB.min.x, extentB.max.y, extentB.min.z)) ||
-        IsPointInExtent(extentA, new Vector3(extentB.min.x, extentB.max.y, extentB.max.z)) ||
-        IsPointInExtent(extentA, new Vector3(extentB.max.x, extentB.min.y, extentB.min.z)) ||
-        IsPointInExtent(extentA, new Vector3(extentB.max.x, extentB.min.y, extentB.max.z)) ||
-        IsPointInExtent(extentA, new Vector3(extentB.max.x, extentB.max.y, extentB.min.z)) ||
-        IsPointInExtent(extentA, new Vector3(extentB.max.x, extentB.max.y, extentB.max.z)) ? true :
-        isSecond ? false : CheckIntersection(extentB, extentA, true);
-        
+    private static bool CheckIntersection((Vector3 min, Vector3 max) extentA, (Vector3 min, Vector3 max) extentB, bool isSecond)
+    {
+        bool isAnyInExtent = false;
+        foreach(var p in GetAllPoints(extentB))
+            isAnyInExtent = isAnyInExtent || IsPointInExtent(extentA, p);
+        return isAnyInExtent ? true : isSecond ? false : CheckIntersection(extentB, extentA, true);
+    }
+    public static Vector3[] GetAllPoints((Vector3 min, Vector3 max) extent)
+    {
+        var answ = new Vector3[8];
+        answ[0] = new Vector3(extent.min.x, extent.min.y, extent.min.z);
+        answ[1] = new Vector3(extent.min.x, extent.min.y, extent.max.z);
+        answ[2] = new Vector3(extent.min.x, extent.max.y, extent.min.z);
+        answ[3] = new Vector3(extent.min.x, extent.max.y, extent.max.z);
+        answ[4] = new Vector3(extent.max.x, extent.min.y, extent.min.z);
+        answ[5] = new Vector3(extent.max.x, extent.min.y, extent.max.z);
+        answ[6] = new Vector3(extent.max.x, extent.max.y, extent.min.z);
+        answ[7] = new Vector3(extent.max.x, extent.max.y, extent.max.z);
+        return answ;
+    }
     public static ((int x, int y, int z) min, (int x, int y, int z) max) UpdateExtent(IEnumerable<Vector3> verts)
     {
         var min = verts.First();
