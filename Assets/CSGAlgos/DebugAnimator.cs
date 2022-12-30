@@ -9,6 +9,8 @@ public class DebugAnimator : MonoBehaviour
     [SerializeField]
     private List<GameObject> DebugObjects;
     [SerializeField]
+    private KeyCode KeyToNextStep;
+    private static bool IsKeyPressed;
     private void Awake()
     {
         DrawedObjects = new Dictionary<object, GameObject>();
@@ -17,6 +19,17 @@ public class DebugAnimator : MonoBehaviour
     public static DebugAnimator GlobalAnimator
     {
         get => Camera.main.GetComponent<DebugAnimator>();
+    }
+    public static IEnumerator WaitForKeyToPush()
+    {
+        while (!IsKeyPressed)
+        {
+            IsKeyPressed = Input.GetKeyDown(GlobalAnimator.KeyToNextStep);
+            if (IsKeyPressed)
+                break;
+            yield return new WaitForEndOfFrame();
+        }
+        IsKeyPressed = false;
     }
     // Start is called before the first frame update
     #region Drawing Methods
@@ -177,7 +190,13 @@ public class DebugAnimator : MonoBehaviour
     }
     public static IEnumerator DrawExtent(PrimitiveMesh mesh)
     {
-        foreach (var p in Extent.GetAllPoints(mesh.ObjectExtent))
+        foreach (var p in Extent.GetAllPoints(mesh))
+            DebugDrawPoint(p);
+        yield return new WaitForSeconds(AlgoParams.DebugStepTime);
+    }
+    public static IEnumerator DrawExtent(Polygon poly)
+    {
+        foreach (var p in Extent.GetAllPoints(poly))
             DebugDrawPoint(p);
         yield return new WaitForSeconds(AlgoParams.DebugStepTime);
     }
@@ -248,7 +267,7 @@ public class DebugAnimator : MonoBehaviour
     }
     public static IEnumerator DestroyExtent(PrimitiveMesh mesh)
     {
-        foreach(var p in Extent.GetAllPoints(mesh.ObjectExtent))
+        foreach(var p in Extent.GetAllPoints(mesh))
         {
             foreach(var obj in GlobalAnimator.DrawedObjects.Keys)
             {
@@ -290,16 +309,26 @@ public class DebugAnimator : MonoBehaviour
     }
     private static IEnumerator Divide(PrimitiveMesh A, PrimitiveMesh B)
     {
-        var Aex = A.ToGlobal();
-        var Bex = B.ToGlobal();
+        foreach (var polyA in A.Polygons)
+        {
+            yield return DrawPolygon(polyA);
+            yield return DestroyPolygon(polyA);
+        }
+        foreach (var polyB in B.Polygons)
+        {
+            yield return DrawPolygon(polyB);
+            yield return DestroyPolygon(polyB);
+        }
         yield return DrawExtent(A);
         yield return DrawExtent(B);
-        if (Extent.CheckIntersection(Aex, Bex))
+        yield return DestroyExtent(A);
+        yield return DestroyExtent(B);
+        if (Extent.CheckIntersection(A.ObjectExtent, B.ObjectExtent))
         {
             foreach (var polyA in A.Polygons)
             {
                 yield return DrawPolygon(polyA);
-                if (Extent.CheckIntersection(A.ToGlobal(polyA), Bex))
+                if (Extent.CheckIntersection(A.ToGlobal(polyA), B.ObjectExtent))
                 {
                     foreach (var polyB in B.Polygons)
                     {
@@ -323,6 +352,7 @@ public class DebugAnimator : MonoBehaviour
                 yield return DestroyPolygon(polyA);
             }
         }
+
     }
     public static IEnumerator SubdivideNonCoplanar(Polygon polyA, Polygon polyB, IEnumerable<float> allDistances)
     {
@@ -859,6 +889,9 @@ public class DebugAnimator : MonoBehaviour
             poly.Vertices = verts.ToRing();
             seg.PrecedingVertices.first++;
             seg.PrecedingVertices.last++;
+            var v1 = poly.Vertices[seg.PrecedingVertices.last];
+            var id2 = 1;
+            var id3 = seg.PrecedingVertices.last - 1;
             newPs[0] = new Polygon(poly.Parent, poly.Vertices[seg.PrecedingVertices.last], newVs[1],
                 poly.Vertices[(seg.PrecedingVertices.last - 1 + poly.Vertices.Length) % poly.Vertices.Length]);
             newPs[1] = new Polygon(poly.Parent, newVs[1], poly.Vertices[seg.PrecedingVertices.last],
@@ -903,11 +936,13 @@ public class DebugAnimator : MonoBehaviour
             
         }
         yield return DrawPolygon(newPs[0], new Color(255f, 50f, 50f));
+        yield return WaitForKeyToPush();
         yield return DrawPolygon(newPs[1], new Color(255f, 50f, 50f));
+        yield return WaitForKeyToPush();
         yield return DrawPolygon(newPs[2], new Color(255f, 50f, 50f));
+        yield return WaitForKeyToPush();
         newVs[0].Status = Vertex.VertexStatus.Boundary;
         newVs[1].Status = Vertex.VertexStatus.Boundary;
-        yield return new WaitForSeconds(AlgoParams.DebugStepTime * 2);
         yield return DestroyPolygon(newPs[0]);
         yield return DestroyPolygon(newPs[1]);
         yield return DestroyPolygon(newPs[2]);

@@ -16,8 +16,9 @@ public static class Extent
             isAnyInExtent = isAnyInExtent || IsPointInExtent(extentA, p);
         return isAnyInExtent ? true : isSecond ? false : CheckIntersection(extentB, extentA, true);
     }
-    public static Vector3[] GetAllPoints((Vector3 min, Vector3 max) extent)
+    public static Vector3[] GetAllPoints((Vector3 min, Vector3 max) extent, PrimitiveMesh parent = null)
     {
+        extent = parent != null ? (parent.ToGlobal(extent.min), parent.ToGlobal(extent.max)) : extent;
         var answ = new Vector3[8];
         answ[0] = new Vector3(extent.min.x, extent.min.y, extent.min.z);
         answ[1] = new Vector3(extent.min.x, extent.min.y, extent.max.z);
@@ -27,6 +28,34 @@ public static class Extent
         answ[5] = new Vector3(extent.max.x, extent.min.y, extent.max.z);
         answ[6] = new Vector3(extent.max.x, extent.max.y, extent.min.z);
         answ[7] = new Vector3(extent.max.x, extent.max.y, extent.max.z);
+        return answ;
+    }
+    public static Vector3[] GetAllPoints(PrimitiveMesh parent)
+    {
+        var ext = parent.ObjectExtent;
+        var answ = new Vector3[8];
+        answ[0] = new Vector3(ext.min.x, ext.min.y, ext.min.z);
+        answ[1] = new Vector3(ext.min.x, ext.min.y, ext.max.z);
+        answ[2] = new Vector3(ext.min.x, ext.max.y, ext.min.z);
+        answ[3] = new Vector3(ext.min.x, ext.max.y, ext.max.z);
+        answ[4] = new Vector3(ext.max.x, ext.min.y, ext.min.z);
+        answ[5] = new Vector3(ext.max.x, ext.min.y, ext.max.z);
+        answ[6] = new Vector3(ext.max.x, ext.max.y, ext.min.z);
+        answ[7] = new Vector3(ext.max.x, ext.max.y, ext.max.z);
+        return answ;
+    }
+    public static Vector3[] GetAllPoints(Polygon poly)
+    {
+        var ext = poly.PolyExtent;
+        var answ = new Vector3[8];
+        answ[0] = new Vector3(ext.min.x, ext.min.y, ext.min.z);
+        answ[1] = new Vector3(ext.min.x, ext.min.y, ext.max.z);
+        answ[2] = new Vector3(ext.min.x, ext.max.y, ext.min.z);
+        answ[3] = new Vector3(ext.min.x, ext.max.y, ext.max.z);
+        answ[4] = new Vector3(ext.max.x, ext.min.y, ext.min.z);
+        answ[5] = new Vector3(ext.max.x, ext.min.y, ext.max.z);
+        answ[6] = new Vector3(ext.max.x, ext.max.y, ext.min.z);
+        answ[7] = new Vector3(ext.max.x, ext.max.y, ext.max.z);
         return answ;
     }
     public static ((int x, int y, int z) min, (int x, int y, int z) max) UpdateExtent(IEnumerable<Vector3> verts)

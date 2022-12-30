@@ -11,15 +11,15 @@ public class PrimitiveMesh : MonoBehaviour
         (
             min: new Vector3
             (
-                Vertices[extentIds.min.x].LocalPosition.x,
-                Vertices[extentIds.min.y].LocalPosition.y,
-                Vertices[extentIds.min.z].LocalPosition.z
+                ToGlobal(Vertices[extentIds.min.x]).x,
+                ToGlobal(Vertices[extentIds.min.y]).y,
+                ToGlobal(Vertices[extentIds.min.z]).z
             ),
             max: new Vector3
             (
-                Vertices[extentIds.max.x].LocalPosition.x,
-                Vertices[extentIds.max.y].LocalPosition.y,
-                Vertices[extentIds.max.z].LocalPosition.z
+                ToGlobal(Vertices[extentIds.max.x]).x,
+                ToGlobal(Vertices[extentIds.max.y]).y,
+                ToGlobal(Vertices[extentIds.max.z]).z
             )
         );
     }
@@ -57,6 +57,7 @@ public class PrimitiveMesh : MonoBehaviour
         mesh.triangles = mesh.vertices.Select(a => i++).ToArray();
         mesh.RecalculateNormals();
     }
+    public void UpdateExtent() => extentIds = Extent.UpdateExtent(Vertices.Select(a => ToGlobal(a)));
     public void ExcludePolygons(Polygon[] polygons)
     {
         this.polygons = polygons;
@@ -68,13 +69,11 @@ public class PrimitiveMesh : MonoBehaviour
             }
         }
     }
-    void Start()
+    public void RefreshInstance()
     {
-        mesh = GetComponent<MeshFilter>().mesh;
-        vertices = new Vertex[0];
-        polygons = new Polygon[mesh.triangles.Length / 3];
+        
         Dictionary<int, int> duplicates = new Dictionary<int, int>();
-        for(int k = 0; k < mesh.triangles.Length; k+=3)
+        for (int k = 0; k < mesh.triangles.Length; k += 3)
         {
             var trios = new Vertex[3];
             for (int j = 0; j < 3; j++)
@@ -86,11 +85,18 @@ public class PrimitiveMesh : MonoBehaviour
                 duplicates[mesh.triangles[k + j]] = actId;
                 trios[j] = vertices[actId];
             }
-            polygons[k / 3] = new Polygon(this, trios[0], trios[1], trios[2]); 
+            polygons[k / 3] = new Polygon(this, trios[0], trios[1], trios[2]);
         }
-        extentIds = Extent.UpdateExtent(vertices.Select(a => a.LocalPosition));
+        UpdateExtent();
         foreach (var v in vertices)
             v.neighbours = v.neighbours.Distinct().ToList();
+    }
+    void Start()
+    {
+        mesh = GetComponent<MeshFilter>().mesh;
+        vertices = new Vertex[0];
+        polygons = new Polygon[mesh.triangles.Length / 3];
+        RefreshInstance();
     }
 
     public bool CreateVertex(Vector3 position, bool isGlobal, out Vertex vert, out int actId)
@@ -117,11 +123,11 @@ public class PrimitiveMesh : MonoBehaviour
     }
     // Update is called once per frame
     #region MatrixTransform
-    public (Vector3 emin, Vector3 emax) ToGlobal() =>
+    /*public (Vector3 emin, Vector3 emax) ToGlobal() =>
     (
         emin: transform.localToWorldMatrix.MultiplyPoint3x4(ObjectExtent.min),
         emax: transform.localToWorldMatrix.MultiplyPoint3x4(ObjectExtent.max)
-    );
+    );*/
     public (Vector3 normal, float D) ToGlobal((Vector3 normal, float D) planeEquation)
     {
         var plane = new Vector4(planeEquation.normal.x, planeEquation.normal.y, planeEquation.normal.z, planeEquation.D);

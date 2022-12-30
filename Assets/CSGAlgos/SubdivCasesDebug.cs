@@ -37,6 +37,7 @@ public class SubdivCasesDebug : MonoBehaviour
             debugInstrumentTarget.position = new Vector3(1f, 1.6f, 0f);
             debugInstrumentTarget.rotation = Quaternion.Euler(0f, 60f, 0f);
             debugInstrumentTarget.localScale = defaultScale;
+            debugInstrumentTarget.GetComponent<PrimitiveMesh>().RefreshInstance();
             DebugAnimator.Extract(SculptMesh, Instrument);
         }
         //Edge Face Face
@@ -45,6 +46,7 @@ public class SubdivCasesDebug : MonoBehaviour
             debugInstrumentTarget.position = new Vector3(0f, 1.3f, 1.4f);
             debugInstrumentTarget.rotation = Quaternion.identity;
             debugInstrumentTarget.localScale = defaultScale;
+            debugInstrumentTarget.GetComponent<PrimitiveMesh>().RefreshInstance();
             DebugAnimator.Extract(SculptMesh, Instrument);
         }
         //Edge Face Edge
@@ -53,6 +55,7 @@ public class SubdivCasesDebug : MonoBehaviour
             debugInstrumentTarget.position = new Vector3(0.348f, 3.32f, -0.232f);
             debugInstrumentTarget.rotation = Quaternion.Euler(0f, 57.8f, 0f);
             debugInstrumentTarget.localScale = defaultScale;
+            debugInstrumentTarget.GetComponent<PrimitiveMesh>().RefreshInstance();
             DebugAnimator.Extract(SculptMesh, Instrument);
         }
         //Edge Edge Edge
@@ -61,6 +64,7 @@ public class SubdivCasesDebug : MonoBehaviour
             debugInstrumentTarget.position = new Vector3(1.104f, 0.4026f, 0.839f);
             debugInstrumentTarget.rotation = Quaternion.Euler(0f, 57.78f, -0.12f);
             debugInstrumentTarget.localScale = defaultScale;
+            debugInstrumentTarget.GetComponent<PrimitiveMesh>().RefreshInstance();
             DebugAnimator.Extract(SculptMesh, Instrument);
         }
         //Vertex Face Face
@@ -69,6 +73,7 @@ public class SubdivCasesDebug : MonoBehaviour
             debugInstrumentTarget.position = new Vector3(2.369f, 0.379f, -1.708f);
             debugInstrumentTarget.rotation = Quaternion.Euler(3.724f, 9.184f, -21.889f);
             debugInstrumentTarget.localScale = defaultScale;
+            debugInstrumentTarget.GetComponent<PrimitiveMesh>().RefreshInstance();
             DebugAnimator.Extract(SculptMesh, Instrument);
         }
         //Vertex Face Edge
@@ -77,6 +82,7 @@ public class SubdivCasesDebug : MonoBehaviour
             debugInstrumentTarget.position = new Vector3(1.796f, 3.048f, 1.423f);
             debugInstrumentTarget.rotation = Quaternion.Euler(-8.199f, 72.134f, 29.165f);
             debugInstrumentTarget.localScale = new Vector3(10f, 10f, 10f);
+            debugInstrumentTarget.GetComponent<PrimitiveMesh>().RefreshInstance();
             DebugAnimator.Extract(SculptMesh, Instrument);
         }
         //Vertex Face Vertex
@@ -90,6 +96,7 @@ public class SubdivCasesDebug : MonoBehaviour
             debugInstrumentTarget.position = new Vector3(2.5454f, 0.4212f, -1.4842f);
             debugInstrumentTarget.rotation = Quaternion.Euler(0f, 57.78f, -0.1f);
             debugInstrumentTarget.localScale = defaultScale;
+            debugInstrumentTarget.GetComponent<PrimitiveMesh>().RefreshInstance();
             DebugAnimator.Extract(SculptMesh, Instrument);
         }
         //Vertex Edge Vertex
@@ -98,6 +105,7 @@ public class SubdivCasesDebug : MonoBehaviour
             debugInstrumentTarget.position = new Vector3(3.26f, 2.155f, 1.35f);
             debugInstrumentTarget.rotation = Quaternion.Euler(0f, 57.78f, -0.15f);
             debugInstrumentTarget.localScale = new Vector3(12f, 12f, 12f);
+            debugInstrumentTarget.GetComponent<PrimitiveMesh>().RefreshInstance();
             DebugAnimator.Extract(SculptMesh, Instrument);
         }
         //Vertex Vertex Vertex
@@ -106,6 +114,7 @@ public class SubdivCasesDebug : MonoBehaviour
             debugInstrumentTarget.position = new Vector3(2.935f, 0.43f, -1.707f);
             debugInstrumentTarget.rotation = Quaternion.identity;
             debugInstrumentTarget.localScale = defaultScale;
+            debugInstrumentTarget.GetComponent<PrimitiveMesh>().RefreshInstance();
             DebugAnimator.Extract(SculptMesh, Instrument);
         }
     }

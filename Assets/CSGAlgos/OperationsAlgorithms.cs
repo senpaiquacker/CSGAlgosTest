@@ -45,13 +45,11 @@ public class OperationsAlgorithms
 
     private static void Divide(PrimitiveMesh A, PrimitiveMesh B)
     {
-        var Aex = A.ToGlobal();
-        var Bex = B.ToGlobal();
-        if (Extent.CheckIntersection(Aex, Bex))
+        if (Extent.CheckIntersection(A.ObjectExtent, B.ObjectExtent))
         {
             foreach (var polyA in A.Polygons)
             {
-                if (Extent.CheckIntersection(A.ToGlobal(polyA), Bex))
+                if (Extent.CheckIntersection(A.ToGlobal(polyA), B.ObjectExtent))
                 {
                     foreach (var polyB in B.Polygons)
                     {
